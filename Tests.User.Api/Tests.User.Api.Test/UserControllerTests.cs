@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 using Tests.User.Api.Controllers;
+using Tests.User.Api.Services;
 
 namespace Tests.User.Api.Test
 {
@@ -8,17 +9,19 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_User_When_Valid_Id_Passed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            DatabaseContext database = new();
+            Models.User user = new()
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
-            UserController controller = new UserController();
+            UserService userService = new();
+
+            UserController controller = new(userService);
             IActionResult result = controller.Get(user.Id);
             OkObjectResult ok = result as OkObjectResult;           
 
@@ -29,8 +32,17 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_Valid_When_User_Created()
         {
-            UserController controller = new UserController();
-            IActionResult result = controller.Create("Test", "User", "20");
+            UserService userService = new();
+
+            UserController controller = new(userService);
+
+            Models.User user = new()
+            {
+                FirstName = "Test",
+                LastName = "User",
+                Age = 20
+            };
+            IActionResult result = controller.Create(user);
 
             OkResult ok = result as OkResult;
 
@@ -41,18 +53,28 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_Valid_When_User_Updated()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            DatabaseContext database = new();
+            Models.User user = new()
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
-            UserController controller = new UserController();
-            IActionResult result = controller.Update(user.Id, "Updated", "User", "21");
+            UserService userService = new();
+
+            UserController controller = new(userService);
+
+            Models.User updatedUser = new()
+            {
+                Id = user.Id,
+                FirstName = "Updated",
+                LastName = "User",
+                Age = 21
+            };
+            IActionResult result = controller.Update(updatedUser);
 
             OkResult ok = result as OkResult;
 
@@ -63,17 +85,19 @@ namespace Tests.User.Api.Test
         [Fact]
         public async Task Should_Return_Valid_When_User_Removed()
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = new Models.User
+            DatabaseContext database = new();
+            Models.User user = new()
             {
                 FirstName = "Test",
                 LastName = "User",
-                Age = "20"
+                Age = 20
             };
             database.Users.Add(user);
             database.SaveChanges();
 
-            UserController controller = new UserController();
+            UserService userService = new();
+
+            UserController controller = new(userService);
             IActionResult result = controller.Delete(user.Id);
 
             OkResult ok = result as OkResult;

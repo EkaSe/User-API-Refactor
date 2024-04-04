@@ -1,9 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Tests.User.Api.Services;
 
 namespace Tests.User.Api.Controllers
 {
     public class UserController : Controller
     {
+        private readonly IUserService _userService;
+
+        public UserController(IUserService userService)
+        {
+            _userService = userService;
+        }
+        
         /// <summary>
         ///     Gets a user
         /// </summary>
@@ -13,55 +21,52 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Get(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            Models.User user = database.Users.Where(user => user.Id == id).First();
+            var user = _userService.GetUserById(id);
+            if (user == null)
+            {
+                return NotFound();
+            }
             return Ok(user);
         }
 
         /// <summary>
         ///     Create a new user
         /// </summary>
-        /// <param name="firstName">First name of the user</param>
-        /// <param name="lastName">Last name of the user</param>
-        /// <param name="age">Age of the user (must be a number)</param>
+        /// <param name="user">The user object containing information such as first name, last name, and age</param>
         /// <returns></returns>
         [HttpPost]
         [Route("api/users")]
-        public IActionResult Create(string firstName, string lastName, string age)
+        public IActionResult Create(Models.User user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Add(new Models.User
+            try
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName
-            });
-            Database.SaveChanges();
-            return Ok();
+                _userService.CreateUser(user);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
         ///     Updates a user
         /// </summary>
-        /// <param name="id">ID of the user</param>
-        /// <param name="firstName">First name of the user</param>
-        /// <param name="lastName">Last name of the user</param>
-        /// <param name="age">Age of the user (must be a number)</param>
+        /// <param name="user">The user object containing information such as first name, last name, and age</param>
         /// <returns></returns>
         [HttpPut]
         [Route("api/users")]
-        public IActionResult Update(int id, string firstName, string lastName, string age)
+        public IActionResult Update(Models.User user)
         {
-            DatabaseContext Database = new DatabaseContext();
-            Database.Users.Update(new Models.User
+            try
             {
-                Age = age,
-                FirstName = firstName,
-                LastName = lastName,
-                Id = id
-            });
-            Database.SaveChanges();
-            return Ok();
+                _userService.UpdateUser(user);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -73,13 +78,15 @@ namespace Tests.User.Api.Controllers
         [Route("api/users")]
         public IActionResult Delete(int id)
         {
-            DatabaseContext database = new DatabaseContext();
-            database.Users.Remove(new Models.User
+            try
             {
-                Id = id
-            });
-            database.SaveChanges();
-            return Ok();
+                _userService.DeleteUser(id);
+                return Ok();
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
     }
 }
